@@ -1,15 +1,18 @@
 import React, { useState } from "react";
 
-interface Task {
+export interface Task {
   name: string;
   active: boolean;
 }
 
-const ActiveTasks: React.FC = () => {
+interface ActiveTasksProps {
+  setCompletedTasks: React.Dispatch<React.SetStateAction<Task[]>>;
+}
+
+const ActiveTasks: React.FC<ActiveTasksProps> = ({ setCompletedTasks }) => {
   const [taskInput, setTaskInput] = useState<string>("");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTaskInput(e.target.value);
@@ -26,12 +29,14 @@ const ActiveTasks: React.FC = () => {
     }
   };
 
-
   const handleTaskToggle = (index: number) => {
-    const updatedTasks = tasks.map((task, i) =>
-      i === index ? { ...task, active: !task.active } : task
-    );
+    const updatedTasks = tasks.filter((_, i) => i !== index);
+    const checkedTask = tasks[index];
     setTasks(updatedTasks);
+    setCompletedTasks((prevCompletedTasks) => [
+      ...prevCompletedTasks,
+      checkedTask,
+    ]);
   };
 
   const handleDeleteTask = (index: number) => {
@@ -46,7 +51,14 @@ const ActiveTasks: React.FC = () => {
       setTasks(updatedTasks);
     }
   };
-
+  const handleDeleteAll = () => {
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete all active tasks?"
+    );
+    if (isConfirmed) {
+      setTasks([]);
+    }
+  };
   const tasksPerPage = 6;
   const totalPages = Math.ceil(tasks.length / tasksPerPage);
 
@@ -68,10 +80,12 @@ const ActiveTasks: React.FC = () => {
 
     return (
       <>
-        <li className="mx-1 px-3 py-2 hover:bg-blue-500 hover:text-white rounded-md cursor-pointer">
+        <li
+          className="mx-1 px-3 py-2 hover:bg-blue-500 hover:text-white rounded-md cursor-pointer"
+          onClick={() => paginate(Math.max(1, currentPage - 1))}
+        >
           <button
             type="button"
-            onClick={() => paginate(Math.max(1, currentPage - 1))}
             className=" focus:outline-none"
             disabled={currentPage === 1}
           >
@@ -86,20 +100,19 @@ const ActiveTasks: React.FC = () => {
                 ? "bg-blue-500 text-white"
                 : "bg-gray-200 text-gray-600"
             }`}
+            onClick={() => paginate(page)}
           >
-            <button
-              type="button"
-              onClick={() => paginate(page)}
-              className="focus:outline-none"
-            >
+            <button type="button" className="focus:outline-none">
               {page}
             </button>
           </li>
         ))}
-        <li className="mx-1 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-500 hover:text-white">
+        <li
+          className="mx-1 px-3 py-2 rounded-md cursor-pointer hover:bg-blue-500 hover:text-white"
+          onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
+        >
           <button
             type="button"
-            onClick={() => paginate(Math.min(totalPages, currentPage + 1))}
             className="focus:outline-none"
             disabled={currentPage === totalPages}
           >
@@ -112,7 +125,24 @@ const ActiveTasks: React.FC = () => {
 
   return (
     <div className="mx-auto w-full flex-row justify-center">
-      <div className="mt-8 mb-4 flex justify-between items-center">
+      {tasks.length !== 0 ? (
+        <div className="flex items-center">
+          <h2 className="text-center w-11/12  text-2xl font-bold mb-1">
+            Active Tasks
+          </h2>
+
+          <span
+            className="btn btn-danger w-1/12 mb-2 py-1 px-2"
+            onClick={handleDeleteAll}
+          >
+            Delete All
+          </span>
+        </div>
+      ) : (
+        <h2 className="text-center text-2xl font-bold mb-1">Active Tasks</h2>
+      )}
+
+      <div className="mt-2 mb-4 flex justify-between items-center">
         <input
           type="text"
           className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
@@ -120,7 +150,7 @@ const ActiveTasks: React.FC = () => {
           value={taskInput}
           onChange={handleInputChange}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
+            if (e.key === "Enter") {
               e.preventDefault();
               handleAddTask();
             }
@@ -148,28 +178,31 @@ const ActiveTasks: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {currentTasks.map((task, index) => (
-                <tr key={index}>
-                  <td className="px-1 py-2 sm:w-1/4">
-                    <input
-                      type="checkbox"
-                      checked={task.active}
-                      onChange={() =>
-                        handleTaskToggle(indexOfFirstTask + index)
-                      }
-                    />
-                  </td>
-                  <td className="px-1 py-2 sm:w-1/2">{task.name}</td>
-                  <td className="px-1 py-2">
-                    <span
-                      className="text-red-500 hover:text-red-700 cursor-pointer"
-                      onClick={() => handleDeleteTask(indexOfFirstTask + index)}
-                    >
-                      Delete
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {currentTasks.map(
+                (task, index) =>
+                  !task.active && (
+                    <tr key={index}>
+                      <td className="px-1 py-2 sm:w-1/4">
+                        <input
+                          type="checkbox"
+                          checked={task.active}
+                          onChange={() =>
+                            handleTaskToggle(indexOfFirstTask + index)
+                          }
+                        />
+                      </td>
+                      <td className="px-1 py-2 sm:w-1/2">{task.name}</td>
+                      <td className="px-1 py-2">
+                        <span
+                          className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none"
+                          onClick={() => handleDeleteTask(index)}
+                        >
+                          Delete
+                        </span>
+                      </td>
+                    </tr>
+                  )
+              )}
             </tbody>
           </table>
           <nav className="mt-4" aria-label="Pagination">

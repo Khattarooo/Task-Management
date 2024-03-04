@@ -40,12 +40,11 @@ body {
 }
 .button-container {
   position: absolute;
-  top: 20px; /* Adjust top position as needed */
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 999; /* Ensure buttons are above other content */
+  z-index: 999;
 }
-
 
 .container--signin {
   left: 0;
@@ -90,7 +89,7 @@ body {
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
-  background-size:cover ;
+  background-size: cover;
   height: 100%;
   left: -100%;
   position: relative;

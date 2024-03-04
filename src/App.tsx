@@ -3,7 +3,8 @@ import Spinner from "./Components/Spinner";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./App.css";
-import ActiveTaks from "./Components/ActiveTaks";
+import ActiveTasks, { Task } from "./Components/ActiveTaks";
+import CompletedTasks from "./Components/CompletedTasks";
 
 function App() {
   const [isSignInActive, setIsSignInActive] = useState<boolean>(false);
@@ -11,6 +12,8 @@ function App() {
   const [completedTaskClicked, setCompletedTaskClicked] =
     useState<boolean>(false);
   const [activeTaskClicked, setActiveTaskClicked] = useState<boolean>(false);
+  const [, setActiveTasks] = useState<Task[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
 
   const handleCompletedClick = () => {
     if (!completedTaskClicked) {
@@ -57,12 +60,16 @@ function App() {
         </div>
         <div className="container__form container--signup">
           <form className="form" id="form1">
-            Completed
+            <CompletedTasks
+              completedTasks={completedTasks}
+              setCompletedTasks={setCompletedTasks}
+              setActiveTasks={setActiveTasks}
+            />
           </form>
         </div>
         <div className="container__form container--signin">
           <form className="form" id="form2">
-            <ActiveTaks />
+            <ActiveTasks setCompletedTasks={setCompletedTasks} />
           </form>
         </div>
         <div
